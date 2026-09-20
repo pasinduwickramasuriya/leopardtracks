@@ -185,7 +185,14 @@ class MongoHeroModel:
 
     def get_hero_image_url(self):
         if self.imageUrl and str(self.imageUrl).strip():
-            return str(self.imageUrl).strip()
+            from .models import optimize_cloudinary_url
+            return optimize_cloudinary_url(str(self.imageUrl).strip(), 1200)
+        return '/static/images/yala-wildlife-hero.jpg'
+
+    def get_hero_image_mobile_url(self):
+        if self.imageUrl and str(self.imageUrl).strip():
+            from .models import optimize_cloudinary_url
+            return optimize_cloudinary_url(str(self.imageUrl).strip(), 640)
         return '/static/images/yala-wildlife-hero.jpg'
 
 

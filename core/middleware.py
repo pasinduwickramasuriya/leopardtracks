@@ -22,50 +22,58 @@ class AutoDatabaseInitMiddleware:
         if not _DB_INITIALIZED:
             _DB_INITIALIZED = True
             try:
-                # 1. Run migrations if tables are not yet created in /tmp/db.sqlite3
+                from core.models import SafariPackage
+                pkg_count = 0
                 try:
-                    from core.models import SafariPackage
-                    _ = SafariPackage.objects.count()
+                    pkg_count = SafariPackage.objects.count()
                 except Exception:
+                    # Tables missing in /tmp/db.sqlite3, run migrations
                     call_command('migrate', interactive=False)
+                    try:
+                        pkg_count = SafariPackage.objects.count()
+                    except Exception:
+                        pkg_count = 0
 
-                # 2. Ensure Admin Superuser Exists
-                try:
-                    from django.contrib.auth import get_user_model
-                    User = get_user_model()
-                    admin_user = os.getenv('DJANGO_SUPERUSER_USERNAME', 'admin')
-                    admin_pass = os.getenv('DJANGO_SUPERUSER_PASSWORD', 'admin123')
-                    admin_email = os.getenv('DJANGO_SUPERUSER_EMAIL', 'admin@discoveryala.com')
-
-                    user_obj = User.objects.filter(username=admin_user).first()
-                    if not user_obj:
-                        User.objects.create_superuser(
-                            username=admin_user,
-                            email=admin_email,
-                            password=admin_pass
-                        )
-                    else:
-                        if not user_obj.is_staff or not user_obj.is_superuser:
-                            user_obj.is_staff = True
-                            user_obj.is_superuser = True
-                            user_obj.save()
-                except Exception as e:
-
-                    logger.warning(f"Superuser auto-check notice: {e}")
-
-                # 3. Hydrate SQLite from live MongoDB Atlas
-                try:
-                    from core.mongodb import sync_all_from_mongo_to_sqlite
-                    hydrated = sync_all_from_mongo_to_sqlite()
-                    
-                    # Only fallback to initial fixture if MongoDB hydration was completely inactive/failed and table is empty
-                    from core.models import SafariPackage
-                    if SafariPackage.objects.count() == 0 and not hydrated:
-                        fixture = Path(__file__).resolve().parent.parent / 'initial_data.json'
-                        if fixture.exists():
+                # Only if database is completely unseeded do we populate it
+                if pkg_count == 0:
+                    fixture = Path(__file__).resolve().parent.parent / 'initial_data.json'
+                    if fixture.exists():
+                        try:
                             call_command('loaddata', str(fixture), interactive=False)
-                except Exception as e:
-                    logger.warning(f"MongoDB hydration notice: {e}")
+                            pkg_count = SafariPackage.objects.count()
+                        except Exception as e:
+                            logger.warning(f"Fixture load notice: {e}")
+
+                    if pkg_count == 0:
+                        try:
+                            from core.mongodb import sync_all_from_mongo_to_sqlite
+                            sync_all_from_mongo_to_sqlite()
+                        except Exception as e:
+                            logger.warning(f"MongoDB hydration notice: {e}")
+
+                # Ensure Admin Superuser Exists when accessing admin panel
+                if request.path.startswith('/admin/'):
+                    try:
+                        from django.contrib.auth import get_user_model
+                        User = get_user_model()
+                        admin_user = os.getenv('DJANGO_SUPERUSER_USERNAME', 'admin')
+                        admin_pass = os.getenv('DJANGO_SUPERUSER_PASSWORD', 'admin123')
+                        admin_email = os.getenv('DJANGO_SUPERUSER_EMAIL', 'admin@discoveryala.com')
+
+                        user_obj = User.objects.filter(username=admin_user).first()
+                        if not user_obj:
+                            User.objects.create_superuser(
+                                username=admin_user,
+                                email=admin_email,
+                                password=admin_pass
+                            )
+                        else:
+                            if not user_obj.is_staff or not user_obj.is_superuser:
+                                user_obj.is_staff = True
+                                user_obj.is_superuser = True
+                                user_obj.save()
+                    except Exception as e:
+                        logger.warning(f"Superuser auto-check notice: {e}")
 
             except Exception as e:
                 logger.error(f"AutoDatabaseInit error: {e}")

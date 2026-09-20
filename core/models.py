@@ -311,6 +311,19 @@ class HeroSection(models.Model):
             url = "https://res.cloudinary.com/dkfnpmzpv/image/upload/v1784094600/hero_sections/kgazrufqbqrk6mumlbsm.jpg"
         return optimize_cloudinary_url(url, 1200)
 
+    def get_hero_image_mobile_url(self):
+        url = ""
+        if self.imageUrl and self.imageUrl.strip():
+            url = self.imageUrl.strip()
+        elif self.image_file:
+            try:
+                url = self.image_file.url
+            except Exception:
+                pass
+        if not url:
+            url = "https://res.cloudinary.com/dkfnpmzpv/image/upload/v1784094600/hero_sections/kgazrufqbqrk6mumlbsm.jpg"
+        return optimize_cloudinary_url(url, 640)
+
     def __str__(self):
         return f"{self.title} ({'Active' if self.is_active else 'Inactive'})"
 

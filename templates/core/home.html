@@ -192,13 +192,24 @@
 {% endblock %}
 
 {% block extra_head %}
-<link rel="preload" as="image" href="{{ hero.get_hero_image_url }}" fetchpriority="high">
+<link rel="preload" as="image" href="{{ hero.get_hero_image_mobile_url }}" media="(max-width: 768px)" fetchpriority="high">
+<link rel="preload" as="image" href="{{ hero.get_hero_image_url }}" media="(min-width: 769px)" fetchpriority="high">
 {% endblock %}
 
 {% block content %}
 <!-- 1. Webflow-Style Hero Section -->
-<section class="hero-section"
-    style="background-image: linear-gradient(to bottom, rgba(18, 33, 24, 0.3), rgba(18, 33, 24, 0.75)), url('{{ hero.get_hero_image_url }}');">
+<section class="hero-section">
+    <picture class="hero-bg-picture">
+        <source media="(max-width: 768px)" srcset="{{ hero.get_hero_image_mobile_url }}">
+        <img src="{{ hero.get_hero_image_url }}"
+             alt="{{ hero.title|default:'Yala Safari Packages & Luxury Tented Camps' }} - Discoveryala"
+             class="hero-bg-img"
+             fetchpriority="high"
+             decoding="async"
+             width="1200"
+             height="800">
+    </picture>
+    <div class="hero-overlay"></div>
     <div class="hero-content">
         {% if hero.badge_text %}
         <div class="hero-pill-badge">{{ hero.badge_text }}</div>
