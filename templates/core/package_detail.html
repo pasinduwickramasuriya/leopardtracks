@@ -1342,6 +1342,8 @@
                 </div>
             </div>
 
+            {% include 'components/verify_human.html' %}
+
             <button type="submit" class="btn-reserve-package"
                 style="border: none; font-size: 0.95rem; cursor: pointer;">
                 <i class="fa-solid fa-paper-plane"></i> SUBMIT BOOKING
@@ -1536,8 +1538,10 @@
                                 document.body.style.overflow = 'hidden';
                             }
                             form.reset();
+                            if (window.turnstile) { window.turnstile.reset(); }
                         } else {
-                            alert('⚠️ Could not submit booking: ' + (data.message || 'Please check form details.'));
+                            if (window.turnstile) { window.turnstile.reset(); }
+                            alert('⚠️ ' + (data.message || 'Please verify you are human and try again.'));
                         }
                     })
                     .catch(err => {
@@ -1547,6 +1551,7 @@
                             document.body.style.overflow = 'hidden';
                         }
                         form.reset();
+                        if (window.turnstile) { window.turnstile.reset(); }
                     });
             });
         }

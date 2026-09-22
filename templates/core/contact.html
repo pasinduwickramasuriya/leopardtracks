@@ -301,6 +301,13 @@
             </script>
             {% endif %}
 
+            {% if error_message %}
+            <div class="alert-error-banner"
+                style="margin-bottom: 24px; padding: 14px 20px; background: #BC4749; color: #FFFFFF; border-radius: 50px; font-weight: 700; font-size: 0.9rem; text-align: center;">
+                <i class="fa-solid fa-triangle-exclamation"></i> {{ error_message }}
+            </div>
+            {% endif %}
+
             <div class="section-header text-center" style="margin-bottom: 24px;">
                 <span class="section-tag tag-sage" style="font-size: 0.78rem; padding: 4px 14px;"><i
                         class="fa-solid fa-paper-plane"></i> DIRECT DESK</span>
@@ -345,6 +352,8 @@
                         placeholder="Tell us about your trip plans or questions..." required
                         style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid rgba(96,108,56,0.15); background: rgba(96,108,56,0.05); font-size: 16px; font-family: var(--font-body);"></textarea>
                 </div>
+
+                {% include 'components/verify_human.html' %}
 
                 <div class="form-submit-wrapper text-center">
                     <button type="submit" class="btn-gold-pill"

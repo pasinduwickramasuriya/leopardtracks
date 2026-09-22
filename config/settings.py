@@ -83,6 +83,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'core.context_processors.security_context',
             ],
         },
     },
@@ -223,4 +224,10 @@ if CLOUDINARY_CLOUD_NAME or CLOUDINARY_URL:
             )
     except Exception as e:
         pass
+
+# ==============================================================================
+# Bot Protection & Human Verification (Cloudflare Turnstile)
+# ==============================================================================
+CLOUDFLARE_TURNSTILE_SITE_KEY = os.getenv('CLOUDFLARE_TURNSTILE_SITE_KEY', '').strip()
+CLOUDFLARE_TURNSTILE_SECRET_KEY = os.getenv('CLOUDFLARE_TURNSTILE_SECRET_KEY', '').strip()
 

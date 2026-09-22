@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
 from django.contrib import messages
 from .models import SafariPackage, SafariBooking, BlogPost, HeroSection, Tour, GuestReview, optimize_cloudinary_url
+from core.security import is_spam_or_bot, verify_human_submission
 
 
 
@@ -364,6 +365,20 @@ def package_detail(request, slug):
 
 def create_booking(request):
     if request.method == 'POST':
+        # 1. Spam & Bot Protection (Honeypots, Cyrillic scam strings, spam patterns)
+        is_spam, spam_reason = is_spam_or_bot(request)
+        if is_spam:
+            return JsonResponse({
+                'status': 'success',
+                'message': 'Thank you! Your safari reservation request has been received.',
+                'booking_id': 'DISC-RES'
+            })
+
+        # 2. Human Verification Check (Turnstile / Interactive verification)
+        is_human, human_reason = verify_human_submission(request)
+        if not is_human:
+            return JsonResponse({'status': 'error', 'message': human_reason}, status=400)
+
         try:
             package_title = request.POST.get('package_title', 'Safari Booking')
             full_name = request.POST.get('full_name', '')
@@ -827,6 +842,20 @@ def tour_detail(request, slug):
 
 
     if request.method == 'POST':
+        # 1. Spam & Bot Protection (Honeypot, Cyrillic scam filter, spam keywords)
+        is_spam, spam_reason = is_spam_or_bot(request)
+        if is_spam:
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest' or 'json' in request.headers.get('accept', ''):
+                return JsonResponse({'status': 'success', 'booking_id': 'TOUR-RES', 'message': 'Reservation submitted successfully!'})
+            return redirect(f"/tours/{slug}/")
+
+        # 2. Human Verification Check
+        is_human, human_reason = verify_human_submission(request)
+        if not is_human:
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest' or 'json' in request.headers.get('accept', ''):
+                return JsonResponse({'status': 'error', 'message': human_reason}, status=400)
+            return redirect(f"/tours/{slug}/")
+
         full_name = request.POST.get('full_name', '')
         email = request.POST.get('email', '')
         country = request.POST.get('country', '')
@@ -956,6 +985,39 @@ def contact(request):
         user_email = request.POST.get('email_address', '').strip()
         user_phone = request.POST.get('phone_number', '').strip()
         user_message = request.POST.get('message', '').strip()
+
+        # 1. Spam & Bot Protection (Honeypot, Cyrillic / Russian scam filter, spam keywords)
+        is_spam, spam_reason = is_spam_or_bot(request)
+        if is_spam:
+            # Silent Drop: return success immediately so bots do not retry, but DO NOT dispatch any emails!
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.POST.get('is_ajax') == '1':
+                return JsonResponse({
+                    'status': 'success',
+                    'message': f"Thank you, {user_name}! Your safari inquiry has been received. Our Yala desk team will contact you within 15 minutes."
+                })
+            from django.shortcuts import redirect
+            from django.urls import reverse
+            return redirect(f"{reverse('contact')}?success=1")
+
+        # 2. Human Verification Check
+        is_human, human_reason = verify_human_submission(request)
+        if not is_human:
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.POST.get('is_ajax') == '1':
+                return JsonResponse({'status': 'error', 'message': human_reason}, status=400)
+            context = {
+                'title': 'Contact Discoveryala | Safari Desk & Support Sri Lanka',
+                'contact_info': {
+                    'phone': '+94 77 815 8004',
+                    'phone_clean': '+94778158004',
+                    'email': 'discoveryala0@gmail.com',
+                    'address': 'Wickrama, Kasingama, Yala Entrance Road, Southern Province, Sri Lanka',
+                    'desk_hours': 'Monday – Sunday: 05:00 AM – 08:00 PM IST',
+                    'gate_hours': 'Park Gate Desk: 05:30 AM – 06:00 PM IST',
+                    'whatsapp_url': 'https://wa.me/94778158004?text=Hello%20Yala%20Leopard%20Tracks!%20I%20would%20like%20to%20inquire%20about%20safari%20packages.'
+                },
+                'error_message': human_reason,
+            }
+            return render(request, 'core/contact.html', context)
 
         # Send Email to Desk Admin & Guest Confirmation
         try:
@@ -1474,6 +1536,22 @@ def tickets(request):
 
     ticket_success = None
     if request.method == 'POST':
+        # 1. Spam & Bot Protection (Honeypots, Cyrillic scam strings, spam patterns)
+        is_spam, spam_reason = is_spam_or_bot(request)
+        if is_spam:
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.content_type == 'application/json':
+                return JsonResponse({'status': 'success', 'message': 'Thank you! Your permit request has been submitted successfully.', 'ref_code': 'PR-AUTO'})
+            from django.shortcuts import redirect
+            return redirect('tickets')
+
+        # 2. Human Verification Check
+        is_human, human_reason = verify_human_submission(request)
+        if not is_human:
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.content_type == 'application/json':
+                return JsonResponse({'status': 'error', 'message': human_reason}, status=400)
+            from django.shortcuts import redirect
+            return redirect('tickets')
+
         full_name = request.POST.get('full_name', '').strip()
         country = request.POST.get('country', '').strip()
         email = request.POST.get('email_address', '').strip()
@@ -1761,6 +1839,21 @@ def bungalows(request):
         }
 
     if request.method == 'POST':
+        # 1. Spam & Bot Protection (Honeypots, Cyrillic scam strings, spam patterns)
+        is_spam, spam_reason = is_spam_or_bot(request)
+        if is_spam:
+            from django.shortcuts import redirect
+            from django.urls import reverse
+            return redirect(f"{reverse('bungalows')}?success=1")
+
+        # 2. Human Verification Check
+        is_human, human_reason = verify_human_submission(request)
+        if not is_human:
+            from django.contrib import messages
+            from django.shortcuts import redirect
+            messages.error(request, human_reason)
+            return redirect('bungalows')
+
         full_name = request.POST.get('full_name', '').strip()
         email = request.POST.get('email_address', '').strip()
         phone_code = request.POST.get('phone_code', '+94').strip()
