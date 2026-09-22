@@ -944,19 +944,26 @@ def tour_detail(request, slug):
 
 def contact(request):
     success_message = None
+    if request.method == 'GET' and request.GET.get('success') == '1':
+        name = request.GET.get('name', '').strip()
+        if name:
+            success_message = f"Thank you, {name}! Your safari inquiry has been received. Our Yala desk team will contact you within 15 minutes."
+        else:
+            success_message = "Thank you! Your safari inquiry has been received. Our Yala desk team will contact you within 15 minutes."
+
     if request.method == 'POST':
-        user_name = request.POST.get('full_name', '')
-        user_email = request.POST.get('email_address', '')
-        user_phone = request.POST.get('phone_number', '')
-        inquiry_topic = request.POST.get('inquiry_topic', 'General Safari Inquiry')
-        user_message = request.POST.get('message', '')
+        user_name = request.POST.get('full_name', '').strip()
+        user_email = request.POST.get('email_address', '').strip()
+        user_phone = request.POST.get('phone_number', '').strip()
+        user_message = request.POST.get('message', '').strip()
 
         # Send Email to Desk Admin & Guest Confirmation
         try:
             from django.core.mail import EmailMultiAlternatives
             from django.conf import settings
+            import threading
 
-            from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'yalaleopardtracks@gmail.com')
+            from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'Discoveryala <yalaleopardtracks@gmail.com>')
             raw_admin = getattr(settings, 'ADMIN_NOTIFICATION_EMAIL', 'yalaleopardtracks@gmail.com')
             if isinstance(raw_admin, str):
                 admin_recipients = [e.strip() for e in raw_admin.split(',') if e.strip()]
@@ -965,31 +972,91 @@ def contact(request):
             if not admin_recipients:
                 admin_recipients = ['yalaleopardtracks@gmail.com']
 
-            # 1. Admin Email Notification
-            admin_subject = f"🔔 New Contact Inquiry: {inquiry_topic} - {user_name}"
-            admin_body = f"""New Safari Inquiry Received via Website Contact Form:
+            clean_phone = ''.join(c for c in user_phone if c.isdigit())
+            if clean_phone.startswith('0'):
+                clean_phone = '94' + clean_phone[1:]
+            elif not clean_phone.startswith('94') and len(clean_phone) == 9:
+                clean_phone = '94' + clean_phone
+            wa_link = f"https://wa.me/{clean_phone}" if clean_phone else "https://wa.me/94778158004"
 
-Full Name: {user_name}
+            def _async_send_contact_emails():
+                try:
+                    # 1. Admin Email (Plain Text + Rich HTML styled like about.html)
+                    admin_subject = f"🔔 New Safari Contact Inquiry - {user_name}"
+                    admin_body = f"""New Safari Inquiry Received via Discoveryala Contact Form:
+==================================================
+Guest Name: {user_name}
 Email Address: {user_email}
 Phone / WhatsApp: {user_phone}
-Inquiry Topic: {inquiry_topic}
 
 Message Details:
 --------------------------------------------------
 {user_message}
---------------------------------------------------
+==================================================
 """
-            admin_msg = EmailMultiAlternatives(admin_subject, admin_body, from_email, admin_recipients)
-            if user_email:
-                admin_msg.reply_to = [user_email]
-            admin_msg.send(fail_silently=True)
+                    admin_html = f"""
+                    <!DOCTYPE html>
+                    <html>
+                    <head><meta charset="utf-8"></head>
+                    <body style="margin: 0; padding: 32px 16px; background-color: #FAF6EE; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #233325;">
+                        <div style="max-width: 580px; margin: 0 auto; background-color: #FAF6EE;">
+                            <!-- Header -->
+                            <div style="margin-bottom: 24px;">
+                                <p style="margin: 0 0 6px 0; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: #606C38;">Discoveryala Safari Desk</p>
+                                <h1 style="margin: 0; font-size: 24px; font-weight: 800; color: #283618;">New Contact Message</h1>
+                            </div>
 
-            # 2. Guest Email Confirmation
-            if user_email:
-                guest_subject = f"Safari Inquiry Received | Discoveryala"
-                guest_body = f"""Ayubowan {user_name}!
+                            <!-- Details -->
+                            <div style="margin-bottom: 20px;">
+                                <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+                                    <tr>
+                                        <td style="padding: 6px 0; color: #606C38; font-weight: 700; width: 35%; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px;">Guest Name</td>
+                                        <td style="padding: 6px 0; color: #233325; font-weight: 700; font-size: 15px;">{user_name}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 6px 0; color: #606C38; font-weight: 700; width: 35%; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px;">Email Address</td>
+                                        <td style="padding: 6px 0;"><a href="mailto:{user_email}" style="color: #475128; font-weight: 600; text-decoration: none;">{user_email}</a></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 6px 0; color: #606C38; font-weight: 700; width: 35%; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px;">Phone / WhatsApp</td>
+                                        <td style="padding: 6px 0;"><a href="{wa_link}" style="color: #475128; font-weight: 600; text-decoration: none;">{user_phone}</a></td>
+                                    </tr>
+                                </table>
+                            </div>
 
-Thank you for contacting Discoveryala Sri Lanka. We have received your inquiry regarding "{inquiry_topic}".
+                            <!-- Message Details -->
+                            <div style="margin-bottom: 24px;">
+                                <p style="margin: 0 0 8px 0; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #606C38;">Message Details</p>
+                                <p style="margin: 0; font-size: 15px; line-height: 1.7; color: #233325; white-space: pre-wrap;">{user_message}</p>
+                            </div>
+
+                            <!-- Actions -->
+                            <div style="margin: 28px 0;">
+                                <a href="{wa_link}" style="display: inline-block; background-color: #475128; color: #FFFFFF; text-decoration: none; padding: 12px 24px; border-radius: 50px; font-weight: 700; font-size: 13px; margin-right: 8px;">Chat on WhatsApp</a>
+                                <a href="mailto:{user_email}" style="display: inline-block; background-color: #475128; color: #FFFFFF; text-decoration: none; padding: 12px 24px; border-radius: 50px; font-weight: 700; font-size: 13px;">Reply via Email</a>
+                            </div>
+
+                            <!-- Footer -->
+                            <div style="padding-top: 20px; font-size: 12px; color: #778B78; line-height: 1.6;">
+                                Discoveryala Safari Desk • Yala National Park Entrance Road, Sri Lanka<br>
+                                Hotline / WhatsApp: +94 77 815 8004 | Email: yalaleopardtracks@gmail.com
+                            </div>
+                        </div>
+                    </body>
+                    </html>
+                    """
+                    admin_msg = EmailMultiAlternatives(admin_subject, admin_body, from_email, admin_recipients)
+                    admin_msg.attach_alternative(admin_html, "text/html")
+                    if user_email:
+                        admin_msg.reply_to = [user_email]
+                    admin_msg.send(fail_silently=True)
+
+                    # 2. Guest Confirmation Email (Styled with main bg, borderless)
+                    if user_email:
+                        guest_subject = f"🐆 Safari Inquiry Received | Discoveryala Sri Lanka"
+                        guest_body = f"""Ayubowan {user_name}!
+
+Thank you for contacting Discoveryala Sri Lanka. We have received your safari inquiry.
 
 Our senior safari desk coordinator will review your request and get back to you within 15 minutes.
 
@@ -1005,13 +1072,104 @@ Phone / WhatsApp: +94 77 815 8004
 Email: yalaleopardtracks@gmail.com
 Location: Yala National Park Entrance Road, Sri Lanka
 """
-                guest_msg = EmailMultiAlternatives(guest_subject, guest_body, from_email, [user_email])
-                guest_msg.send(fail_silently=True)
+                        guest_html = f"""
+                        <!DOCTYPE html>
+                        <html>
+                        <head><meta charset="utf-8"></head>
+                        <body style="margin: 0; padding: 32px 16px; background-color: #FAF6EE; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #233325;">
+                            <div style="max-width: 580px; margin: 0 auto; background-color: #FAF6EE;">
+                                <!-- Header -->
+                                <div style="margin-bottom: 24px;">
+                                    <p style="margin: 0 0 6px 0; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: #606C38;">Discoveryala Sri Lanka</p>
+                                    <h1 style="margin: 0; font-size: 26px; font-weight: 800; color: #283618;">Ayubowan {user_name}!</h1>
+                                    <p style="margin: 8px 0 0 0; font-size: 15px; color: #475128; line-height: 1.6;">
+                                        Thank you for contacting Discoveryala. We have received your safari inquiry and our desk team will get back to you within 15 minutes.
+                                    </p>
+                                </div>
+
+                                <!-- Summary -->
+                                <div style="margin-bottom: 24px;">
+                                    <p style="margin: 0 0 10px 0; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #606C38;">Summary of Your Request</p>
+                                    <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+                                        <tr>
+                                            <td style="padding: 6px 0; color: #606C38; font-weight: 700; width: 28%;">Name:</td>
+                                            <td style="padding: 6px 0; font-weight: 600; color: #233325;">{user_name}</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding: 6px 0; color: #606C38; font-weight: 700;">Email:</td>
+                                            <td style="padding: 6px 0; color: #233325;">{user_email}</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding: 6px 0; color: #606C38; font-weight: 700;">Phone:</td>
+                                            <td style="padding: 6px 0; color: #233325;">{user_phone}</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding: 6px 0; color: #606C38; font-weight: 700; vertical-align: top;">Message:</td>
+                                            <td style="padding: 6px 0; color: #233325; line-height: 1.6; white-space: pre-wrap;">{user_message}</td>
+                                        </tr>
+                                    </table>
+                                </div>
+
+                                <!-- Response Time Note -->
+                                <div style="margin-bottom: 24px;">
+                                    <p style="margin: 0; font-size: 14px; color: #475128; line-height: 1.6;">
+                                        Our on-site safari coordinators at Yala Entrance Road are on standby daily from 05:00 AM to 08:00 PM IST to answer inquiries and advise on optimal safari timing.
+                                    </p>
+                                </div>
+
+                                <!-- WhatsApp CTA Button -->
+                                <div style="margin: 28px 0;">
+                                    <a href="https://wa.me/94778158004?text=Hello%20Discoveryala!%20I%20just%20submitted%20a%20contact%20inquiry%20via%20your%20website." style="display: inline-block; background-color: #475128; color: #FFFFFF; text-decoration: none; padding: 13px 28px; border-radius: 50px; font-weight: 700; font-size: 14px;">
+                                        Chat on WhatsApp (+94 77 815 8004)
+                                    </a>
+                                </div>
+
+                                <!-- Highlights -->
+                                <p style="margin: 24px 0 16px 0; font-size: 13px; color: #606C38; font-weight: 600;">
+                                    100% Private 4x4 Jeeps • Licensed Naturalist Trackers • Ethical Wildlife Viewing
+                                </p>
+
+                                <!-- Footer -->
+                                <div style="padding-top: 16px; font-size: 12px; color: #778B78; line-height: 1.6;">
+                                    Discoveryala Safari Team<br>
+                                    Wickrama, Kasingama, Yala Entrance Road, Southern Province, Sri Lanka<br>
+                                    Hotline / WhatsApp: +94 77 815 8004 | Email: yalaleopardtracks@gmail.com
+                                </div>
+                            </div>
+                        </body>
+                        </html>
+                        """
+                        guest_msg = EmailMultiAlternatives(guest_subject, guest_body, from_email, [user_email])
+                        guest_msg.attach_alternative(guest_html, "text/html")
+                        guest_msg.send(fail_silently=True)
+
+                except Exception as ex:
+                    print("Async contact email sending error:", ex)
+
+            t = threading.Thread(target=_async_send_contact_emails)
+            t.daemon = True
+            t.start()
 
         except Exception as e:
             print("Contact form email dispatch error:", e)
 
-        success_message = f"Thank you, {user_name}! Your safari inquiry has been received. Our Yala desk team will contact you within 15 minutes."
+        # AJAX support
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.POST.get('is_ajax') == '1':
+            return JsonResponse({
+                'status': 'success',
+                'message': f"Thank you, {user_name}! Your safari inquiry has been received. Our Yala desk team will contact you within 15 minutes."
+            })
+
+        # Post-Redirect-Get (PRG) pattern prevents browser reload duplicate submission
+        from django.shortcuts import redirect
+        from django.urls import reverse
+        from urllib.parse import urlencode
+
+        params = urlencode({
+            'success': '1',
+            'name': user_name
+        })
+        return redirect(f"{reverse('contact')}?{params}#contact-form")
 
     context = {
         'title': 'Contact Discoveryala | Safari Desk & Support Sri Lanka',
