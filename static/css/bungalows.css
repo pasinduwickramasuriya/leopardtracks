@@ -150,6 +150,127 @@
     }
 }
 
+/* Booking Form Section Responsive Enhancements */
+#bookingFormSection {
+    scroll-margin-top: 90px;
+}
+
+.bungalow-form-container {
+    width: 100%;
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 0 20px;
+    box-sizing: border-box;
+}
+
+.custom-contact-form {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.form-group-clean {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.form-label-clean {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 800;
+    color: #233325;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-bottom: 6px;
+}
+
+.form-hint-clean {
+    font-size: 0.76rem;
+    color: var(--text-muted);
+    margin-top: 5px;
+    display: block;
+    line-height: 1.45;
+}
+
+.form-phone-wrapper {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.phone-code-input {
+    width: 78px !important;
+    min-width: 78px !important;
+    max-width: 82px !important;
+    text-align: center;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.phone-number-input {
+    flex: 1 1 auto;
+    min-width: 0 !important;
+}
+
+.form-dates-grid,
+.form-guests-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.form-col-clean {
+    min-width: 0;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.date-input {
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 48px;
+    box-sizing: border-box;
+}
+
+.select-input-clean {
+    width: 100% !important;
+    max-width: 100%;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.guest-count-input {
+    text-align: center;
+    font-weight: 800;
+    min-width: 0;
+}
+
+/* Subtle visual pulse when bungalow is chosen */
+@keyframes fieldPulseHighlight {
+    0% {
+        box-shadow: 0 0 0 0 rgba(96, 108, 56, 0.5);
+        border-color: #606C38;
+    }
+    40% {
+        box-shadow: 0 0 0 5px rgba(96, 108, 56, 0.35);
+        border-color: #606C38;
+        background-color: #FFFFFF;
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(96, 108, 56, 0);
+        border-color: rgba(96, 108, 56, 0.22);
+    }
+}
+
+.field-highlight-pulse {
+    animation: fieldPulseHighlight 1.5s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+}
+
 /* Tablet & Mobile Responsive Adjustments */
 @media (max-width: 1024px) {
     .bungalows-full-container {
@@ -177,6 +298,20 @@
 }
 
 @media (max-width: 768px) {
+    #bookingFormSection {
+        scroll-margin-top: 80px;
+        padding: 40px 0 60px !important;
+    }
+
+    #bookingFormSection .contact-form-card {
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    .bungalow-form-container {
+        padding: 0 16px;
+    }
+
     .facts-grid-responsive {
         grid-template-columns: repeat(2, 1fr);
         gap: 12px;
@@ -195,14 +330,60 @@
 
     .form-input-clean {
         font-size: 16px;
-        /* Prevents auto-zoom on iOS */
+        /* Prevents iOS automatic zoom on focus */
         padding: 12px 14px;
+    }
+
+    .form-dates-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+    }
+
+    .btn-whatsapp-pill,
+    .btn-gold-pill,
+    #submitBtn,
+    #dynamicWhatsAppBtn {
+        width: 100% !important;
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        box-sizing: border-box;
+        text-align: center !important;
     }
 }
 
-@media (max-width: 520px) {
+@media (max-width: 580px) {
     .form-dates-grid {
         grid-template-columns: 1fr !important;
         gap: 14px !important;
+    }
+
+    .form-guests-grid {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 12px !important;
+    }
+
+    #bookingFormSection .section-title {
+        font-size: 1.45rem !important;
+    }
+
+    #bookingFormSection p {
+        font-size: 0.88rem !important;
+    }
+}
+
+@media (max-width: 420px) {
+    .bungalows-full-container,
+    .bungalow-form-container {
+        padding: 0 12px !important;
+    }
+
+    .form-guests-grid {
+        grid-template-columns: 1fr !important;
+        gap: 12px !important;
+    }
+
+    .guest-count-input {
+        text-align: left;
     }
 }

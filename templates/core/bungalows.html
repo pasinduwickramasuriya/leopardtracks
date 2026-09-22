@@ -350,7 +350,7 @@
 <!-- 4. Simple Booking Request & Contact Form Section (Clean Main BG Color) -->
 <section class="contact-form-section" id="bookingFormSection"
     style="background-color: var(--bg-pastel-cream); padding: 55px 0 75px; border-top: 1px solid rgba(96,108,56,0.12);">
-    <div class="bungalows-full-container" style="max-width: 680px;">
+    <div class="bungalow-form-container">
 
         {% if booking_success %}
         <div class="alert-success-banner"
@@ -379,9 +379,8 @@
                 {% csrf_token %}
 
                 <!-- Full Name -->
-                <div>
-                    <label for="full_name"
-                        style="display: block; font-size: 0.8rem; font-weight: 800; color: #233325; text-transform: uppercase; margin-bottom: 6px;">
+                <div class="form-group-clean">
+                    <label for="full_name" class="form-label-clean">
                         Full Name <span style="color: #c94b32;">*</span>
                     </label>
                     <input type="text" id="full_name" name="full_name" required placeholder="e.g. David Harrison"
@@ -389,58 +388,53 @@
                 </div>
 
                 <!-- Email Address -->
-                <div>
-                    <label for="email_address"
-                        style="display: block; font-size: 0.8rem; font-weight: 800; color: #233325; text-transform: uppercase; margin-bottom: 6px;">
+                <div class="form-group-clean">
+                    <label for="email_address" class="form-label-clean">
                         Email Address <span style="color: #c94b32;">*</span>
                     </label>
                     <input type="email" id="email_address" name="email_address" required
                         placeholder="e.g. david@example.com" class="form-input-clean" autocomplete="email">
-                    <span style="font-size: 0.76rem; color: var(--text-muted); margin-top: 4px; display: block;">
+                    <span class="form-hint-clean">
                         <i class="fa-solid fa-envelope font-gold"></i> We will email your confirmation and quotation
                         copy here
                     </span>
                 </div>
 
                 <!-- Phone / WhatsApp -->
-                <div>
-                    <label for="phone_number"
-                        style="display: block; font-size: 0.8rem; font-weight: 800; color: #233325; text-transform: uppercase; margin-bottom: 6px;">
+                <div class="form-group-clean">
+                    <label for="phone_number" class="form-label-clean">
                         Phone / WhatsApp Number <span style="color: #c94b32;">*</span>
                     </label>
-                    <div style="display: flex; gap: 8px;">
+                    <div class="form-phone-wrapper">
                         <input type="text" name="phone_code" value="+94"
-                            style="width: 75px; text-align: center; font-weight: 700;" class="form-input-clean">
+                            class="form-input-clean phone-code-input" aria-label="Country Code">
                         <input type="tel" id="phone_number" name="phone_number" required placeholder="77 815 8004"
-                            class="form-input-clean" style="flex: 1;" autocomplete="tel">
+                            class="form-input-clean phone-number-input" autocomplete="tel">
                     </div>
                 </div>
 
                 <!-- Stay Dates Grid -->
-                <div class="form-dates-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
-                    <div>
-                        <label for="check_in_date"
-                            style="display: block; font-size: 0.8rem; font-weight: 800; color: #233325; text-transform: uppercase; margin-bottom: 6px;">
+                <div class="form-dates-grid">
+                    <div class="form-col-clean">
+                        <label for="check_in_date" class="form-label-clean">
                             Check-in Date (12:00 PM) <span style="color: #c94b32;">*</span>
                         </label>
-                        <input type="date" id="check_in_date" name="check_in_date" required class="form-input-clean">
+                        <input type="date" id="check_in_date" name="check_in_date" required class="form-input-clean date-input">
                     </div>
-                    <div>
-                        <label for="check_out_date"
-                            style="display: block; font-size: 0.8rem; font-weight: 800; color: #233325; text-transform: uppercase; margin-bottom: 6px;">
+                    <div class="form-col-clean">
+                        <label for="check_out_date" class="form-label-clean">
                             Check-out Date (10:00 AM) <span style="color: #c94b32;">*</span>
                         </label>
-                        <input type="date" id="check_out_date" name="check_out_date" required class="form-input-clean">
+                        <input type="date" id="check_out_date" name="check_out_date" required class="form-input-clean date-input">
                     </div>
                 </div>
 
                 <!-- Bungalow Preference -->
-                <div>
-                    <label for="bungalow_choice"
-                        style="display: block; font-size: 0.8rem; font-weight: 800; color: #233325; text-transform: uppercase; margin-bottom: 6px;">
+                <div class="form-group-clean">
+                    <label for="bungalow_choice" class="form-label-clean">
                         Preferred Bungalow
                     </label>
-                    <select id="bungalow_choice" name="bungalow_choice" class="form-input-clean">
+                    <select id="bungalow_choice" name="bungalow_choice" class="form-input-clean select-input-clean">
                         <option value="Recommend Best Available Bungalow">✨ Recommend Best Available Bungalow</option>
                         {% for b in bungalows %}
                         <option value="{{ b.name }} ({{ b.block }})">{{ b.name }} ({{ b.block }})</option>
@@ -449,29 +443,26 @@
                 </div>
 
                 <!-- Guests Breakdown -->
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
-                    <div>
-                        <label for="adult_guests"
-                            style="display: block; font-size: 0.8rem; font-weight: 800; color: #233325; text-transform: uppercase; margin-bottom: 6px;">
+                <div class="form-guests-grid">
+                    <div class="form-col-clean">
+                        <label for="adult_guests" class="form-label-clean">
                             Adult Guests
                         </label>
                         <input type="number" id="adult_guests" name="adult_guests" min="1" max="10" value="2"
-                            class="form-input-clean" style="text-align: center; font-weight: 800;">
+                            class="form-input-clean guest-count-input">
                     </div>
-                    <div>
-                        <label for="child_guests"
-                            style="display: block; font-size: 0.8rem; font-weight: 800; color: #233325; text-transform: uppercase; margin-bottom: 6px;">
+                    <div class="form-col-clean">
+                        <label for="child_guests" class="form-label-clean">
                             Children (Under 12)
                         </label>
                         <input type="number" id="child_guests" name="child_guests" min="0" max="8" value="0"
-                            class="form-input-clean" style="text-align: center; font-weight: 800;">
+                            class="form-input-clean guest-count-input">
                     </div>
                 </div>
 
                 <!-- Message / Special Requests -->
-                <div>
-                    <label for="message"
-                        style="display: block; font-size: 0.8rem; font-weight: 800; color: #233325; text-transform: uppercase; margin-bottom: 6px;">
+                <div class="form-group-clean">
+                    <label for="message" class="form-label-clean">
                         Message / Special Requests (Optional)
                     </label>
                     <textarea id="message" name="message" rows="3"
@@ -488,7 +479,7 @@
                 </button>
 
                 <!-- WhatsApp Quick Chat -->
-                <div style="text-align: center; margin-top: 4px;">
+                <div style="text-align: center; margin-top: 4px; width: 100%;">
                     <a id="dynamicWhatsAppBtn" href="{{ contact_info.whatsapp_url }}" target="_blank" rel="noopener"
                         class="btn-whatsapp-pill"
                         style="display: inline-block; padding: 10px 22px; font-size: 0.84rem;">
@@ -639,7 +630,22 @@
         }
         const formSection = document.getElementById('bookingFormSection');
         if (formSection) {
-            formSection.scrollIntoView({ behavior: 'smooth' });
+            const navHeader = document.querySelector('header.header') || document.querySelector('header');
+            const navHeight = navHeader ? navHeader.offsetHeight : 70;
+            const targetY = formSection.getBoundingClientRect().top + window.pageYOffset - (navHeight + 16);
+            window.scrollTo({
+                top: Math.max(0, targetY),
+                behavior: 'smooth'
+            });
+
+            if (selectElem) {
+                selectElem.classList.remove('field-highlight-pulse');
+                void selectElem.offsetWidth; // trigger reflow
+                selectElem.classList.add('field-highlight-pulse');
+                setTimeout(() => {
+                    selectElem.classList.remove('field-highlight-pulse');
+                }, 1600);
+            }
         }
         updateWhatsAppLink();
     }
