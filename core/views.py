@@ -423,8 +423,8 @@ def create_booking(request):
                 from django.core.mail import EmailMultiAlternatives
                 from django.conf import settings
 
-                from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'Discoveryala <yalaleopardtracks@gmail.com>')
-                admin_email = getattr(settings, 'ADMIN_NOTIFICATION_EMAIL', 'yalaleopardtracks@gmail.com')
+                from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'Discoveryala <discoveryala0@gmail.com>')
+                admin_email = getattr(settings, 'ADMIN_NOTIFICATION_EMAIL', 'discoveryala0@gmail.com')
                 if getattr(settings, 'EMAIL_HOST_USER', ''):
                     admin_email = getattr(settings, 'EMAIL_HOST_USER')
 
@@ -441,7 +441,7 @@ Guests: {guests}
 Total Estimated Amount: ${total_price:.2f}
 
 Hotline / WhatsApp: +94 778158004
-Email: yalaleopardtracks@gmail.com
+Email: discoveryala0@gmail.com
 
 Our safari coordinator desk will contact you shortly to confirm pickup details.
 Discoveryala Expeditions Team
@@ -545,7 +545,7 @@ Discoveryala Expeditions Team
             <p style="margin: 0 0 8px 0; font-weight: 700; color: #FFFFFF; font-size: 13px;">Discoveryala Expeditions & Luxury Safaris</p>
             <p style="margin: 0 0 10px 0;">Yala National Park Buffer Zone, Tissamaharama, Sri Lanka</p>
             <p style="margin: 0 0 12px 0; font-weight: 800; color: #D4AF37; font-size: 13px;">Hotline / WhatsApp: +94 778158004</p>
-            <p style="margin: 0;">Email: <a href="mailto:yalaleopardtracks@gmail.com" class="footer-link">yalaleopardtracks@gmail.com</a> | Web: <a href="https://yalaleopardtracks.com" class="footer-link">yalaleopardtracks.com</a></p>
+            <p style="margin: 0;">Email: <a href="mailto:discoveryala0@gmail.com" class="footer-link">discoveryala0@gmail.com</a> | Web: <a href="https://yalaleopardtracks.com" class="footer-link">yalaleopardtracks.com</a></p>
         </div>
     </div>
 </div>
@@ -615,7 +615,7 @@ Safari Desk Hotline: +94 778158004
 </body>
 </html>"""
 
-                admin_recipients = ['yalaleopardtracks@gmail.com', 'pasinduwickramasooriya@gmail.com']
+                admin_recipients = ['discoveryala0@gmail.com', 'pasinduwickramasooriya@gmail.com']
                 msg_admin = EmailMultiAlternatives(admin_subject, admin_text, from_email, admin_recipients)
                 msg_admin.attach_alternative(admin_html, "text/html")
                 msg_admin.send(fail_silently=False)
@@ -864,7 +864,7 @@ def tour_detail(request, slug):
                 from django.core.mail import EmailMultiAlternatives
                 from django.conf import settings
 
-                from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'Discoveryala <yalaleopardtracks@gmail.com>')
+                from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'Discoveryala <discoveryala0@gmail.com>')
                 
                 guest_subject = f"Tour Reservation Confirmation - {tour.title} | Discoveryala"
                 guest_text = f"Ayubowan {full_name}!\n\nThank you for booking {tour.title}.\nBooking Ref: #{booking_id}\nDate: {safari_date}\nGuests: {guests}\nPrice: ${tour.price}\n\nOur team will contact you shortly."
@@ -904,7 +904,7 @@ def tour_detail(request, slug):
 
                 admin_subject = f"🚨 NEW TOUR BOOKING: {tour.title} - {full_name}"
                 admin_text = f"New Tour Booking: {tour.title}\nGuest: {full_name} ({email})\nPhone: {phone_code} {phone_number}\nDate: {safari_date}\nGuests: {guests}"
-                msg_admin = EmailMultiAlternatives(admin_subject, admin_text, from_email, ['yalaleopardtracks@gmail.com', 'pasinduwickramasooriya@gmail.com'])
+                msg_admin = EmailMultiAlternatives(admin_subject, admin_text, from_email, ['discoveryala0@gmail.com', 'pasinduwickramasooriya@gmail.com'])
                 msg_admin.attach_alternative(guest_html, "text/html")
                 msg_admin.send(fail_silently=True)
             except Exception as e_mail:
@@ -963,14 +963,14 @@ def contact(request):
             from django.conf import settings
             import threading
 
-            from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'Discoveryala <yalaleopardtracks@gmail.com>')
-            raw_admin = getattr(settings, 'ADMIN_NOTIFICATION_EMAIL', 'yalaleopardtracks@gmail.com')
+            from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'Discoveryala <discoveryala0@gmail.com>')
+            raw_admin = getattr(settings, 'ADMIN_NOTIFICATION_EMAIL', 'discoveryala0@gmail.com')
             if isinstance(raw_admin, str):
                 admin_recipients = [e.strip() for e in raw_admin.split(',') if e.strip()]
             else:
                 admin_recipients = list(raw_admin)
             if not admin_recipients:
-                admin_recipients = ['yalaleopardtracks@gmail.com']
+                admin_recipients = ['discoveryala0@gmail.com']
 
             clean_phone = ''.join(c for c in user_phone if c.isdigit())
             if clean_phone.startswith('0'):
@@ -1039,7 +1039,7 @@ Message Details:
                             <!-- Footer -->
                             <div style="padding-top: 20px; font-size: 12px; color: #778B78; line-height: 1.6;">
                                 Discoveryala Safari Desk • Yala National Park Entrance Road, Sri Lanka<br>
-                                Hotline / WhatsApp: +94 77 815 8004 | Email: yalaleopardtracks@gmail.com
+                                Hotline / WhatsApp: +94 77 815 8004 | Email: discoveryala0@gmail.com
                             </div>
                         </div>
                     </body>
@@ -1069,7 +1069,7 @@ Summary of Your Message:
 Warm regards,
 Discoveryala Expedition Team
 Phone / WhatsApp: +94 77 815 8004
-Email: yalaleopardtracks@gmail.com
+Email: discoveryala0@gmail.com
 Location: Yala National Park Entrance Road, Sri Lanka
 """
                         guest_html = f"""
@@ -1133,7 +1133,7 @@ Location: Yala National Park Entrance Road, Sri Lanka
                                 <div style="padding-top: 16px; font-size: 12px; color: #778B78; line-height: 1.6;">
                                     Discoveryala Safari Team<br>
                                     Wickrama, Kasingama, Yala Entrance Road, Southern Province, Sri Lanka<br>
-                                    Hotline / WhatsApp: +94 77 815 8004 | Email: yalaleopardtracks@gmail.com
+                                    Hotline / WhatsApp: +94 77 815 8004 | Email: discoveryala0@gmail.com
                                 </div>
                             </div>
                         </body>
@@ -1176,7 +1176,7 @@ Location: Yala National Park Entrance Road, Sri Lanka
         'contact_info': {
             'phone': '+94 77 815 8004',
             'phone_clean': '+94778158004',
-            'email': 'yalaleopardtracks@gmail.com',
+            'email': 'discoveryala0@gmail.com',
             'address': 'Wickrama, Kasingama, Yala Entrance Road, Southern Province, Sri Lanka',
             'desk_hours': 'Monday – Sunday: 05:00 AM – 08:00 PM IST',
             'gate_hours': 'Park Gate Desk: 05:30 AM – 06:00 PM IST',
@@ -1519,7 +1519,7 @@ def tickets(request):
                 from django.core.mail import EmailMultiAlternatives
                 from django.conf import settings
 
-                from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'Discoveryala <yalaleopardtracks@gmail.com>')
+                from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'Discoveryala <discoveryala0@gmail.com>')
 
                 breakdown_items = ""
                 if foreign_adults > 0:
@@ -1600,7 +1600,7 @@ def tickets(request):
                         </div>
                         <div style="background-color: #122118; padding: 24px; text-align: center; font-size: 12px; color: #999999;">
                             <p style="margin: 0;">Discoveryala • Tissamaharama / Yala National Park, Sri Lanka</p>
-                            <p style="margin: 4px 0 0 0;">Email: <a href="mailto:yalaleopardtracks@gmail.com" style="color: #D4AF37; text-decoration: none;">yalaleopardtracks@gmail.com</a> | WhatsApp: +94 77 815 8004</p>
+                            <p style="margin: 4px 0 0 0;">Email: <a href="mailto:discoveryala0@gmail.com" style="color: #D4AF37; text-decoration: none;">discoveryala0@gmail.com</a> | WhatsApp: +94 77 815 8004</p>
                         </div>
                     </div>
                 </div>
@@ -1613,7 +1613,7 @@ def tickets(request):
                 # Send 1 Email to Admin / Our Desk to Show Bookings
                 admin_subject = f"NEW TICKET PERMIT BOOKING: #{ref_code} - {full_name} ({ticket_date})"
                 admin_text = f"New Park Permit Booking Request:\nRef: #{ref_code}\nName: {full_name}\nCountry: {country}\nEmail: {email}\nPhone: {phone_number}\nDate: {ticket_date}\nTotal Cost: LKR {total_lkr:,.2f} (~ ${total_usd:.2f} USD)"
-                admin_recipients = ['yalaleopardtracks@gmail.com', 'pasinduwickramasooriya@gmail.com']
+                admin_recipients = ['discoveryala0@gmail.com', 'pasinduwickramasooriya@gmail.com']
 
                 msg_admin = EmailMultiAlternatives(admin_subject, admin_text, from_email, admin_recipients)
                 msg_admin.attach_alternative(guest_html, "text/html")
@@ -1788,14 +1788,14 @@ def bungalows(request):
             from django.conf import settings
             import threading
 
-            from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'Discoveryala <yalaleopardtracks@gmail.com>')
-            raw_admin = getattr(settings, 'ADMIN_NOTIFICATION_EMAIL', 'yalaleopardtracks@gmail.com')
+            from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'Discoveryala <discoveryala0@gmail.com>')
+            raw_admin = getattr(settings, 'ADMIN_NOTIFICATION_EMAIL', 'discoveryala0@gmail.com')
             if isinstance(raw_admin, str):
                 admin_recipients = [e.strip() for e in raw_admin.split(',') if e.strip()]
             else:
                 admin_recipients = list(raw_admin)
             if not admin_recipients:
-                admin_recipients = ['yalaleopardtracks@gmail.com']
+                admin_recipients = ['discoveryala0@gmail.com']
 
             full_phone = f"{phone_code} {phone_number}".strip()
 
@@ -1879,7 +1879,7 @@ WHAT HAPPENS NEXT:
 
 If you have urgent questions, connect directly with our 24/7 Safari Desk:
 WhatsApp / Hotline: +94 77 815 8004
-Email: yalaleopardtracks@gmail.com
+Email: discoveryala0@gmail.com
 Location: Palatupana Gate Road, Yala National Park, Sri Lanka
 
 Warm wildlife regards,
@@ -1916,7 +1916,7 @@ The Discoveryala Safari Team
                                 <hr style="border: 0; border-top: 1px solid #E7EBD9; margin: 20px 0;">
                                 <p style="font-size: 12px; color: #778B78; margin-bottom: 0;">
                                     Discoveryala Safari Team • Palatupana Gate Road, Tissamaharama, Sri Lanka<br>
-                                    Hotline / WhatsApp: +94 77 815 8004 | Email: yalaleopardtracks@gmail.com
+                                    Hotline / WhatsApp: +94 77 815 8004 | Email: discoveryala0@gmail.com
                                 </p>
                             </div>
                         </div>
@@ -2128,7 +2128,7 @@ The Discoveryala Safari Team
         'contact_info': {
             'phone': '+94 77 815 8004',
             'phone_clean': '+94778158004',
-            'email': 'yalaleopardtracks@gmail.com',
+            'email': 'discoveryala0@gmail.com',
             'address': 'Palatupana Gate Road, Yala National Park, Sri Lanka',
             'whatsapp_url': 'https://wa.me/94778158004?text=Hello%20Discoveryala!%20I%20would%20like%20to%20inquire%20about%20Yala%20National%20Park%20Bungalow%20Bookings.'
         }
@@ -2373,7 +2373,7 @@ def llms_txt(request):
 ## Direct Contact & Booking
 
 - **WhatsApp / Phone (24/7)**: [+94 77 815 8004](https://wa.me/94778158004)
-- **Email**: [yalaleopardtracks@gmail.com](mailto:yalaleopardtracks@gmail.com)
+- **Email**: [discoveryala0@gmail.com](mailto:discoveryala0@gmail.com)
 - **Base Location**: Palatupana Gate Road, Kasingama, Tissamaharama 82000, Southern Province, Sri Lanka
 - **Full AI Knowledgebase**: [{domain}/llms-full.txt]({domain}/llms-full.txt)
 """
@@ -2442,7 +2442,7 @@ def llms_full_txt(request):
 - **Operating Regions**: Yala National Park (Block 1 Palatupana Gate, Block 5 Katagamuwa Gate), Bundala National Park, Udawalawe National Park, Lunugamvehera National Park, and Islandwide Private Transfers.
 - **Customer Rating**: 4.9/5 based on verified international traveler reviews from the UK, USA, Germany, Australia, and France.
 - **Direct WhatsApp Hotline (24/7 Fast Booking)**: +94 77 815 8004
-- **Email**: yalaleopardtracks@gmail.com
+- **Email**: discoveryala0@gmail.com
 - **Official Website**: {domain}/
 
 ---
@@ -2535,7 +2535,7 @@ Exclusive overnight accommodation inside Yala National Park managed by DWC with 
 
 - **Company**: Discoveryala (Yala Leopard Tracks)
 - **Primary WhatsApp / Phone**: +94 77 815 8004
-- **Email**: yalaleopardtracks@gmail.com
+- **Email**: discoveryala0@gmail.com
 - **Website**: {domain}
 - **Address**: Palatupana Gate Road, Kasingama, Tissamaharama 82000, Sri Lanka
 """
