@@ -7,7 +7,7 @@
       "config": {
         "maxLambdaSize": "15mb",
         "runtime": "python3.12",
-        "maxDuration": 60
+        "maxDuration": 15
       }
     },
     {
@@ -24,13 +24,28 @@
       "dest": "/images/favicon.ico"
     },
     {
+      "src": "/favicon.png",
+      "dest": "/images/favicon.png"
+    },
+    {
+      "src": "/site.webmanifest",
+      "dest": "/site.webmanifest"
+    },
+    {
       "src": "/static/(.*)",
       "dest": "/$1"
+    },
+    {
+      "src": "/.*\\.(php|asp|aspx|jsp|env|git|cgi|sh|yml|yaml|bak|sql|config|ini)$",
+      "status": 404
+    },
+    {
+      "src": "/(wp-|wordpress|xmlrpc|phpmyadmin|admin\\.php|login\\.php|autodiscover|eval-stdin|telescope).*",
+      "status": 404
     },
     {
       "src": "/(.*)",
       "dest": "config/wsgi.py"
     }
   ]
-
 }

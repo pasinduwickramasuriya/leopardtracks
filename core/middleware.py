@@ -23,60 +23,61 @@ class AutoDatabaseInitMiddleware:
             _DB_INITIALIZED = True
             try:
                 from core.models import SafariPackage
-                pkg_count = 0
+                # Ultra-fast check (SELECT 1 LIMIT 1) instead of heavy full-table scanning
+                needs_seed = False
                 try:
-                    pkg_count = SafariPackage.objects.count()
+                    if not SafariPackage.objects.exists():
+                        needs_seed = True
                 except Exception:
                     # Tables missing in /tmp/db.sqlite3, run migrations
-                    call_command('migrate', interactive=False)
                     try:
-                        pkg_count = SafariPackage.objects.count()
+                        call_command('migrate', interactive=False)
+                        if not SafariPackage.objects.exists():
+                            needs_seed = True
                     except Exception:
-                        pkg_count = 0
+                        needs_seed = False
 
-                # Only if database is completely unseeded do we populate it
-                if pkg_count == 0:
+                # Only if database is completely unseeded do we populate fixtures
+                if needs_seed:
                     fixture = Path(__file__).resolve().parent.parent / 'initial_data.json'
                     if fixture.exists():
                         try:
                             call_command('loaddata', str(fixture), interactive=False)
-                            pkg_count = SafariPackage.objects.count()
                         except Exception as e:
                             logger.warning(f"Fixture load notice: {e}")
 
-                    if pkg_count == 0:
-                        try:
-                            from core.mongodb import sync_all_from_mongo_to_sqlite
-                            sync_all_from_mongo_to_sqlite()
-                        except Exception as e:
-                            logger.warning(f"MongoDB hydration notice: {e}")
-
-                # Ensure Admin Superuser Exists when accessing admin panel
-                if request.path.startswith('/admin/'):
                     try:
-                        from django.contrib.auth import get_user_model
-                        User = get_user_model()
-                        admin_user = os.getenv('DJANGO_SUPERUSER_USERNAME', 'admin')
-                        admin_pass = os.getenv('DJANGO_SUPERUSER_PASSWORD', 'admin123')
-                        admin_email = os.getenv('DJANGO_SUPERUSER_EMAIL', 'admin@discoveryala.com')
-
-                        user_obj = User.objects.filter(username=admin_user).first()
-                        if not user_obj:
-                            User.objects.create_superuser(
-                                username=admin_user,
-                                email=admin_email,
-                                password=admin_pass
-                            )
-                        else:
-                            if not user_obj.is_staff or not user_obj.is_superuser:
-                                user_obj.is_staff = True
-                                user_obj.is_superuser = True
-                                user_obj.save()
+                        from core.mongodb import sync_all_from_mongo_to_sqlite
+                        sync_all_from_mongo_to_sqlite()
                     except Exception as e:
-                        logger.warning(f"Superuser auto-check notice: {e}")
+                        logger.warning(f"MongoDB hydration notice: {e}")
 
             except Exception as e:
                 logger.error(f"AutoDatabaseInit error: {e}")
+
+        # Ensure Admin Superuser Exists ONLY when an administrator navigates to the admin panel
+        if request.path.startswith('/admin/'):
+            try:
+                from django.contrib.auth import get_user_model
+                User = get_user_model()
+                admin_user = os.getenv('DJANGO_SUPERUSER_USERNAME', 'admin')
+                admin_pass = os.getenv('DJANGO_SUPERUSER_PASSWORD', 'admin123')
+                admin_email = os.getenv('DJANGO_SUPERUSER_EMAIL', 'admin@discoveryala.com')
+
+                user_obj = User.objects.filter(username=admin_user).first()
+                if not user_obj:
+                    User.objects.create_superuser(
+                        username=admin_user,
+                        email=admin_email,
+                        password=admin_pass
+                    )
+                else:
+                    if not user_obj.is_staff or not user_obj.is_superuser:
+                        user_obj.is_staff = True
+                        user_obj.is_superuser = True
+                        user_obj.save()
+            except Exception as e:
+                logger.warning(f"Superuser auto-check notice: {e}")
 
         # In Admin panel, ensure SQLite periodically has fresh MongoDB records (at most once every 5 minutes)
         global _LAST_ADMIN_SYNC
@@ -106,7 +107,7 @@ class AutoDatabaseInitMiddleware:
             response['Referrer-Policy'] = 'strict-origin-when-cross-origin'
 
         # Edge CDN Caching Optimization (Vercel & Global CDNs)
-        # Prevents serverless function exhaustion while maximizing Googlebot Core Web Vitals & TTFB
+        # Prevents serverless function exhaustion while maximizing Core Web Vitals & TTFB
         is_safe_method = request.method in ('GET', 'HEAD')
         is_authed = getattr(request, 'user', None) and request.user.is_authenticated
         is_private_path = request.path.startswith('/admin') or request.path.startswith('/book')
@@ -126,13 +127,14 @@ class AutoDatabaseInitMiddleware:
 
             if not has_messages and not response.has_header('Cache-Control'):
                 if request.path in ('/robots.txt', '/sitemap.xml', '/site.webmanifest', '/llms.txt', '/llms-full.txt'):
-                    # 24-hour Edge cache for sitemaps/robots/llms.txt
-                    cache_rule = 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800'
-                    cdn_rule = 'public, s-maxage=86400, stale-while-revalidate=604800'
+                    # 7-day Edge cache for sitemaps/robots/llms.txt
+                    cache_rule = 'public, max-age=86400, s-maxage=604800, stale-while-revalidate=604800'
+                    cdn_rule = 'public, s-maxage=604800, stale-while-revalidate=604800'
                 else:
-                    # 1-hour Edge cache for public pages: instant ~20ms response, revalidated in background
-                    cache_rule = 'public, max-age=0, s-maxage=3600, stale-while-revalidate=86400'
-                    cdn_rule = 'public, s-maxage=3600, stale-while-revalidate=86400'
+                    # 10-minute browser cache + 24-hour Edge CDN cache
+                    # Eliminates repeat serverless invocations from visitors and web crawlers
+                    cache_rule = 'public, max-age=600, s-maxage=86400, stale-while-revalidate=604800'
+                    cdn_rule = 'public, s-maxage=86400, stale-while-revalidate=604800'
 
                 response['Cache-Control'] = cache_rule
                 response['CDN-Cache-Control'] = cdn_rule
